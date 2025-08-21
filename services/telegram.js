@@ -8,7 +8,7 @@ const admin_email = process.env.ADMIN_EMAIL;
 class TelegramService {
   async getToken() {
     const { data, error } = await supabase
-      .from('platform_connections')
+      .from('pony.platform_connections') // Updated to use pony schema
       .select('access_token')
       .eq('platform', 'telegram')
       .eq('admin_email', admin_email)
@@ -43,7 +43,7 @@ class TelegramService {
       media_url = await handleMedia(this.getToken.bind(this), msg.voice.file_id, msg.voice.mime_type || 'audio/ogg');
     }
 
-    const { error } = await supabase.from('messages').insert({
+    const { error } = await supabase.from('pony.messages').insert({ // Updated to use pony schema
       sender,
       recipient,
       platform,
@@ -90,7 +90,7 @@ class TelegramService {
     const data = await res.json();
     if (!data.ok) throw new Error(`Telegram send failed: ${data.description}`);
 
-    const { error } = await supabase.from('messages').insert({
+    const { error } = await supabase.from('pony.messages').insert({ // Updated to use pony schema
       sender: admin_email,
       recipient,
       platform: 'telegram',
@@ -104,14 +104,14 @@ class TelegramService {
   async setWebhook() {
     try {
       const token = await this.getToken();
-      const webhookUrl = 'https://ponywardobe.onrender.com/telegram/webhook'; // Replace with your domain/ngrok
+      const webhookUrl = 'https://ponywardobe.onrender.com/telegram/webhook'; // Updated to correct path
       const url = `https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`;
       const res = await fetch(url);
       const data = await res.json();
       if (!data.ok) console.error('Webhook set failed:', data);
       else console.log('Telegram webhook set successfully');
     } catch (err) {
-      console.error('Webhook setup error:', err);
+      console.error('Webhook setup error:', err.message, err.stack);
     }
   }
 }
