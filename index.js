@@ -6,6 +6,26 @@ const PORT = process.env.PORT || 3001;
 const axios = require('axios');
 const PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 const { saveFacebookMessage } = require('./messageService');
+const { handleTelegramWebhook, sendTelegramMessage } = require('./telegramService');
+// Telegram Webhook Endpoint
+app.post('/webhook/telegram', async (req, res) => {
+  await handleTelegramWebhook(req, res);
+});
+
+// Endpoint to send Telegram message
+app.post('/send/telegram', async (req, res) => {
+  try {
+    const { chatId, text } = req.body;
+    if (!chatId || !text) {
+      return res.status(400).json({ error: 'chatId and text are required.' });
+    }
+    await sendTelegramMessage(chatId, text);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Telegram send error:', error.message);
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
 
 app.use(express.json());
 
