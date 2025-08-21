@@ -7,13 +7,17 @@ const admin_email = process.env.ADMIN_EMAIL;
 
 class TelegramService {
   async getToken() {
+    console.log('Fetching token for admin_email:', admin_email);
     const { data, error } = await supabase
-      .from('pony.platform_connections') // Updated to use pony schema
+      .from('pony.platform_connections')
       .select('access_token')
       .eq('platform', 'telegram')
       .eq('admin_email', admin_email)
       .single();
-    if (error) throw new Error(`Failed to get token: ${error.message}`);
+    if (error) {
+      console.error('Token fetch error:', error);
+      throw new Error(`Failed to get token: ${JSON.stringify(error)}`);
+    }
     return data.access_token;
   }
 
@@ -24,6 +28,8 @@ class TelegramService {
     let message = msg.text || '';
     let message_type = 'text';
     let media_url = null;
+
+    console.log('Processing message from:', sender, 'type:', message_type);
 
     if (msg.photo) {
       message_type = 'image';
@@ -43,18 +49,17 @@ class TelegramService {
       media_url = await handleMedia(this.getToken.bind(this), msg.voice.file_id, msg.voice.mime_type || 'audio/ogg');
     }
 
-    const { error } = await supabase.from('pony.messages').insert({ // Updated to use pony schema
-      sender,
-      recipient,
-      platform,
-      message,
-      message_type,
-      media_url,
-    });
-    if (error) throw new Error(`DB insert failed: ${error.message}`);
+    const payload = { sender, recipient, platform, message, message_type, media_url };
+    console.log('Inserting message:', payload);
+    const { error } = await supabase.from('pony.messages').insert(payload);
+    if (error) {
+      console.error('DB insert error:', error);
+      throw new Error(`DB insert failed: ${JSON.stringify(error)}`);
+    }
   }
 
   async sendMessage({ recipient, message, message_type, media_url }) {
+    console.log('Sending message to:', recipient, 'type:', message_type);
     const token = await this.getToken();
     let method = 'sendMessage';
     const params = { chat_id: recipient, text: message };
@@ -88,23 +93,24 @@ class TelegramService {
       body: JSON.stringify(params),
     });
     const data = await res.json();
-    if (!data.ok) throw new Error(`Telegram send failed: ${data.description}`);
+    if (!data.ok) {
+      console.error('Telegram API error:', data);
+      throw new Error(`Telegram send failed: ${data.description}`);
+    }
 
-    const { error } = await supabase.from('pony.messages').insert({ // Updated to use pony schema
-      sender: admin_email,
-      recipient,
-      platform: 'telegram',
-      message,
-      message_type,
-      media_url,
-    });
-    if (error) throw new Error(`DB insert failed: ${error.message}`);
+    const payload = { sender: admin_email, recipient, platform: 'telegram', message, message_type, media_url };
+    console.log('Inserting sent message:', payload);
+    const { error } = await supabase.from('pony.messages').insert(payload);
+    if (error) {
+      console.error('DB insert error:', error);
+      throw new Error(`DB insert failed: ${JSON.stringify(error)}`);
+    }
   }
 
   async setWebhook() {
     try {
       const token = await this.getToken();
-      const webhookUrl = 'https://ponywardobe.onrender.com/telegram/webhook'; // Updated to correct path
+      const webhookUrl = 'https://ponywardobe.onrender.com/telegram/webhook';
       const url = `https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`;
       const res = await fetch(url);
       const data = await res.json();
