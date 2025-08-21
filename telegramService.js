@@ -12,7 +12,7 @@ async function setWebhook(webhookUrl) {
 // Handle incoming Telegram webhook
 async function handleTelegramWebhook(req, res) {
   const update = req.body;
-  if (update.message) {
+  if (update && update.message) {
     const msg = update.message;
     const sender = msg.from.id;
     const recipient = msg.chat.id;
