@@ -104,7 +104,7 @@ class TelegramService {
   async setWebhook() {
     try {
       const token = await this.getToken();
-      const webhookUrl = 'YOUR_PUBLIC_URL/telegram/webhook'; // Replace with your domain/ngrok
+      const webhookUrl = 'https://ponywardobe.onrender.com/telegram/webhook'; // Replace with your domain/ngrok
       const url = `https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`;
       const res = await fetch(url);
       const data = await res.json();
