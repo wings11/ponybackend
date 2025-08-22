@@ -20,15 +20,13 @@ app.get('/', (req, res) => res.send('Backend running'));
 
 // Test Supabase connection
 app.get('/test-supabase', async (req, res) => {
-  const supabaseTest = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
-    db: { schema: 'pony' }
-  });
-  const { data, error } = await supabaseTest.from('messages').select('*');
+  const supabaseTest = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+  const { data, error } = await supabaseTest.from('pony_messages').select('*');
   if (error) {
-    console.error('Supabase test error for pony.messages:', JSON.stringify(error, null, 2));
+    console.error('Supabase test error for pony_messages:', JSON.stringify(error, null, 2));
     return res.status(500).json({ error: JSON.stringify(error) });
   }
-  console.log('Supabase test success for pony.messages:', data);
+  console.log('Supabase test success for pony_messages:', data);
   res.json(data);
 });
 

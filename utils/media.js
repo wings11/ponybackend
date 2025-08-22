@@ -1,9 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const fetch = require('node-fetch');
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
-  db: { schema: 'pony' } // Explicitly set default schema to pony
-});
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 async function handleMedia(getToken, file_id, mime_type) {
   const token = await getToken();
