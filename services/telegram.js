@@ -33,6 +33,11 @@ class TelegramService {
     let message_type = 'text';
     let media_url = null;
 
+    // Extract metadata
+    const first_name = msg.from.first_name || null;
+    const last_name = msg.from.last_name || null;
+    const username = msg.from.username || null;
+
     console.log('Processing message from:', sender, 'type:', message_type);
 
     if (msg.photo) {
@@ -53,7 +58,7 @@ class TelegramService {
       media_url = await handleMedia(this.getToken.bind(this), msg.voice.file_id, msg.voice.mime_type || 'audio/ogg');
     }
 
-    const payload = { sender, recipient, platform, message, message_type, media_url };
+    const payload = { sender, recipient, platform, message, message_type, media_url, first_name, last_name, username };
     console.log('Inserting message into pony_messages:', payload);
     const { error } = await supabase.from('pony_messages').insert(payload);
     if (error) {
