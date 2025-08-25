@@ -1,4 +1,5 @@
-const telegramService = require('../services/telegram');
+
+import telegramService from '../services/telegram.js';
 
 class TelegramController {
   async handleWebhook(req, res) {
@@ -70,4 +71,4 @@ async getUserName(req, res) {
 
 }
 
-module.exports = new TelegramController();
+export default new TelegramController();

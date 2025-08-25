@@ -1,9 +1,7 @@
-const { createClient } = require('@supabase/supabase-js');
-const fetch = require('node-fetch');
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+import supabase from '../supabaseClient.js';
 
-async function handleMedia(getToken, file_id, mime_type) {
+export async function handleMedia(getToken, file_id, mime_type) {
   const token = await getToken();
   const getFileUrl = `https://api.telegram.org/bot${token}/getFile?file_id=${file_id}`;
   console.log('Fetching file from Telegram:', getFileUrl);
@@ -35,5 +33,3 @@ async function handleMedia(getToken, file_id, mime_type) {
   console.log('Media uploaded, public URL:', publicData.publicUrl);
   return publicData.publicUrl;
 }
-
-module.exports = { handleMedia };

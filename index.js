@@ -1,7 +1,9 @@
-require('dotenv').config();
-const express = require('express');
-const telegramRoutes = require('./routes/telegram');
-const { createClient } = require('@supabase/supabase-js');
+
+import dotenv from 'dotenv';
+dotenv.config();
+import express from 'express';
+import telegramRoutes from './routes/telegram.js';
+import { createClient } from '@supabase/supabase-js';
 
 
 const app = express();

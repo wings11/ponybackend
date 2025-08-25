@@ -1,13 +1,6 @@
-const { createClient } = require('@supabase/supabase-js');
-let fetch;
-try {
-  fetch = require('node-fetch');
-} catch (e) {
-  fetch = global.fetch;
-}
-const { handleMedia } = require('../utils/media');
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+import supabase from '../supabaseClient.js';
+import { handleMedia } from '../utils/media.js';
 const admin_email = process.env.ADMIN_EMAIL;
 
 class TelegramService {
@@ -140,4 +133,4 @@ class TelegramService {
   }
 }
 
-module.exports = new TelegramService();
+export default new TelegramService();
