@@ -45,6 +45,28 @@ class TelegramController {
       res.status(500).json({ error: 'Failed to send message' });
     }
   }
+
+  // Add to TelegramController class
+async getUserName(req, res) {
+  const { platform, id } = req.query;
+  if (platform !== 'telegram') return res.status(400).json({ error: 'Platform not supported yet' });
+  if (!id) return res.status(400).json({ error: 'ID required' });
+
+  try {
+    const token = await telegramService.getToken();
+    const url = `https://api.telegram.org/bot${token}/getChat?chat_id=${id}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (!data.ok) throw new Error(data.description);
+    const name = data.result.first_name || data.result.username || 'Unknown User';
+    res.json({ name });
+  } catch (err) {
+    console.error('Get user name error:', err.message, err.stack);
+    res.status(500).json({ error: 'Failed to fetch user name' });
+  }
+}
+
+
 }
 
 module.exports = new TelegramController();

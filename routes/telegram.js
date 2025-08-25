@@ -8,4 +8,7 @@ router.post('/webhook', telegramController.handleWebhook);
 // Send message endpoint
 router.post('/send', telegramController.sendMessage);
 
+// Add to routes/telegram.js
+router.get('/get-user-name', telegramController.getUserName);
+
 module.exports = router;
