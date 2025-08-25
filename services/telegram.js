@@ -1,5 +1,10 @@
 const { createClient } = require('@supabase/supabase-js');
-const fetch = require('node-fetch');
+let fetch;
+try {
+  fetch = require('node-fetch');
+} catch (e) {
+  fetch = global.fetch;
+}
 const { handleMedia } = require('../utils/media');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);

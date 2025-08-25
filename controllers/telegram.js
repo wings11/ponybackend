@@ -55,7 +55,8 @@ async getUserName(req, res) {
   try {
     const token = await telegramService.getToken();
     const url = `https://api.telegram.org/bot${token}/getChat?chat_id=${id}`;
-    const response = await fetch(url);
+  const fetch = require('node-fetch');
+  const response = await fetch(url);
     const data = await response.json();
     if (!data.ok) throw new Error(data.description);
     const name = data.result.first_name || data.result.username || 'Unknown User';
