@@ -40,7 +40,8 @@ class TelegramController {
         media_url,
       });
       console.log('Message sent successfully to:', recipient);
-      res.sendStatus(200);
+      // Return a JSON response for frontend compatibility
+      res.status(200).json({ status: 'ok', recipient, message, message_type, media_url });
     } catch (err) {
       console.error('Send message error:', err.message, err.stack);
       res.status(500).json({ error: 'Failed to send message' });
