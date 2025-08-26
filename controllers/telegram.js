@@ -50,19 +50,24 @@ class TelegramController {
 
   async getUnreadCount(req, res) {
     try {
-      const { data, error } = await (await import('../supabaseClient.js')).default
+      const supabase = (await import('../supabaseClient.js')).default;
+      const adminEmail = process.env.ADMIN_EMAIL;
+      const { data, error } = await supabase
         .from('pony_messages')
-        .select('sender, count(*)', { count: 'exact' })
+        .select('sender')
         .eq('platform', 'telegram')
         .eq('admin_read', false)
-        .group('sender');
+        .eq('recipient', adminEmail);
       if (error) {
         console.error('Unread count error:', error);
         return res.status(500).json({ error: 'Failed to get unread counts' });
       }
-      // Convert to { sender: count }
+      // Aggregate counts by sender in JS
       const counts = {};
-      (data || []).forEach(row => { counts[row.sender] = Number(row.count); });
+      (data || []).forEach((row) => {
+        const s = row.sender;
+        counts[s] = (counts[s] || 0) + 1;
+      });
       res.json({ counts });
     } catch (err) {
       console.error('Unread count exception:', err.message, err.stack);
