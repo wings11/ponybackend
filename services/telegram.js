@@ -58,7 +58,9 @@ class TelegramService {
 
     const payload = { sender, recipient, platform, message, message_type, media_url, first_name, last_name, username };
     console.log('Inserting message into pony_messages:', payload);
-    const { error } = await supabase.from('pony_messages').insert(payload);
+  // mark incoming user messages as unread for admin
+  payload.admin_read = false;
+  const { error } = await supabase.from('pony_messages').insert(payload);
     if (error) {
       console.error('DB insert error for pony_messages:', JSON.stringify(error, null, 2));
       throw new Error(`DB insert failed: ${JSON.stringify(error)}`);
@@ -109,7 +111,9 @@ class TelegramService {
 
     const payload = { sender: admin_email, recipient, platform: 'telegram', message, message_type, media_url };
     console.log('Inserting sent message into pony_messages:', payload);
-    const { error } = await supabase.from('pony_messages').insert(payload);
+  // admin messages are already read by admin
+  payload.admin_read = true;
+  const { error } = await supabase.from('pony_messages').insert(payload);
     if (error) {
       console.error('DB insert error for pony_messages:', JSON.stringify(error, null, 2));
       throw new Error(`DB insert failed: ${JSON.stringify(error)}`);

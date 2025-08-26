@@ -48,6 +48,50 @@ class TelegramController {
     }
   }
 
+  async getUnreadCount(req, res) {
+    try {
+      const { data, error } = await (await import('../supabaseClient.js')).default
+        .from('pony_messages')
+        .select('sender, count(*)', { count: 'exact' })
+        .eq('platform', 'telegram')
+        .eq('admin_read', false)
+        .group('sender');
+      if (error) {
+        console.error('Unread count error:', error);
+        return res.status(500).json({ error: 'Failed to get unread counts' });
+      }
+      // Convert to { sender: count }
+      const counts = {};
+      (data || []).forEach(row => { counts[row.sender] = Number(row.count); });
+      res.json({ counts });
+    } catch (err) {
+      console.error('Unread count exception:', err.message, err.stack);
+      res.status(500).json({ error: 'Failed to get unread counts' });
+    }
+  }
+
+  async markRead(req, res) {
+    try {
+      const { sender } = req.body;
+      if (!sender) return res.status(400).json({ error: 'sender required' });
+      const supabase = (await import('../supabaseClient.js')).default;
+      const { error } = await supabase
+        .from('pony_messages')
+        .update({ admin_read: true })
+        .eq('platform', 'telegram')
+        .eq('sender', sender)
+        .eq('admin_read', false);
+      if (error) {
+        console.error('Mark read error:', error);
+        return res.status(500).json({ error: 'Failed to mark read' });
+      }
+      res.json({ status: 'ok' });
+    } catch (err) {
+      console.error('Mark read exception:', err.message, err.stack);
+      res.status(500).json({ error: 'Failed to mark read' });
+    }
+  }
+
   // Add to TelegramController class
 async getUserName(req, res) {
   const { platform, id } = req.query;
