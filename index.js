@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
 import telegramRoutes from './routes/telegram.js';
+import facebookRoutes from './routes/facebook.js';
 import { createClient } from '@supabase/supabase-js';
 
 
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 
 // Mount routes
 app.use('/telegram', telegramRoutes);
+app.use('/facebook', facebookRoutes);
 
 // Basic health check
 app.get('/', (req, res) => res.send('Backend running'));
