@@ -70,6 +70,19 @@ class FacebookController {
       res.status(500).json({ error: 'internal' });
     }
   }
+
+  async getUserName(req, res) {
+    try {
+      const { id, adminEmail } = req.query;
+      if (!id) return res.status(400).json({ error: 'missing id' });
+      const profile = await (await import('../services/facebook.js')).default.fetchProfile(id, adminEmail);
+      if (!profile) return res.status(404).json({ error: 'profile not found' });
+      res.json({ name: profile.name, first_name: profile.first_name, last_name: profile.last_name, profile_pic: profile.profile_pic, profile });
+    } catch (err) {
+      console.error('getUserName facebook error', err);
+      res.status(500).json({ error: 'internal' });
+    }
+  }
 }
 
 export default new FacebookController();
