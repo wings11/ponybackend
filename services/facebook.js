@@ -13,7 +13,10 @@ async function _getConnection(adminEmail) {
 
 export default {
 	async processIncoming(body) {
-		if (!body || body.object !== 'page') return;
+	if (!body || body.object !== 'page') return;
+	// get a page access token if available (used to fetch sender profile)
+	const connForProfile = await _getConnection();
+	const pageAccessToken = process.env.FB_PAGE_ACCESS_TOKEN || (connForProfile && connForProfile.access_token) || null;
 		const entries = body.entry || [];
 		for (const entry of entries) {
 			const pageId = entry.id;
@@ -43,12 +46,39 @@ export default {
 						sender: senderId,
 						recipient: recipientId,
 						platform_user_id: senderId,
+						// name fields will be filled below if we can fetch the profile
+						name: null,
+						first_name: null,
+						last_name: null,
+						profile_pic: null,
 						message: text,
 						message_type,
 						media_url,
 						created_at: new Date(timestamp || Date.now()).toISOString(),
 						admin_read: false
 					};
+
+					// attempt to fetch sender profile (name, first_name, last_name, profile_pic)
+					if (senderId && pageAccessToken) {
+						try {
+							const profileUrl = `${GRAPH_API_BASE}/${encodeURIComponent(senderId)}?fields=first_name,last_name,name,profile_pic&access_token=${encodeURIComponent(pageAccessToken)}`;
+							const res = await fetch(profileUrl);
+							if (res.ok) {
+								const profile = await res.json();
+								insert.name = profile.name || insert.name;
+								insert.first_name = profile.first_name || insert.first_name;
+								insert.last_name = profile.last_name || insert.last_name;
+								insert.profile_pic = profile.profile_pic || insert.profile_pic;
+								// store raw profile data for debugging if needed
+								insert.platform_data = profile;
+							} else {
+								// non-fatal
+								// console.debug('facebook: profile fetch non-ok', await res.text());
+							}
+						} catch (pfErr) {
+							console.error('facebook: error fetching profile', pfErr);
+						}
+					}
 
 					const { error } = await supabase.from('pony_messages').insert([insert]);
 					if (error) console.error('facebook: insert message error', error);
