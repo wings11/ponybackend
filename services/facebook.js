@@ -103,17 +103,10 @@ export default {
 			payload.message = { text: message };
 		}
 
-		let resp, respJson;
-		try {
-			resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-			respJson = await resp.json();
-			if (!resp.ok) {
-				console.error('facebook send API error', respJson);
-				throw new Error(respJson.error?.message || 'facebook send failed');
-			}
-		} catch (err) {
-			console.error('facebook: sendMessage fetch error', err, { url, payload, respJson });
-			throw err;
+		const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+		const respJson = await resp.json();
+		if (!resp.ok) {
+			throw new Error(respJson.error?.message || 'facebook send failed');
 		}
 
 		// Insert outgoing message into DB
@@ -132,23 +125,5 @@ export default {
 		if (error) console.error('facebook: insert outgoing error', error);
 
 		return respJson;
-	}
-,
-
-	// fetch profile for a PSID using page access token
-	async fetchProfile(psid, adminEmail) {
-		const conn = await _getConnection(adminEmail);
-		const pageAccessToken = process.env.FB_PAGE_ACCESS_TOKEN || (conn && conn.access_token) || null;
-		if (!psid || !pageAccessToken) return null;
-		try {
-			const profileUrl = `${GRAPH_API_BASE}/${encodeURIComponent(psid)}?fields=first_name,last_name,name,profile_pic&access_token=${encodeURIComponent(pageAccessToken)}`;
-			const res = await fetch(profileUrl);
-			if (!res.ok) return null;
-			const profile = await res.json();
-			return profile;
-		} catch (err) {
-			console.error('facebook: fetchProfile error', err);
-			return null;
-		}
 	}
 };

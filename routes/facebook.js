@@ -9,6 +9,5 @@ router.post('/webhook', express.json(), facebookController.webhook.bind(facebook
 router.post('/send', express.json(), facebookController.sendMessage.bind(facebookController));
 router.get('/unread-count', facebookController.getUnreadCount.bind(facebookController));
 router.post('/mark-read', express.json(), facebookController.markRead.bind(facebookController));
-router.get('/get-user-name', facebookController.getUserName.bind(facebookController));
 
 export default router;
